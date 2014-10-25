@@ -24,7 +24,6 @@
 (define (my-load filename)       ;; don't want to redefine the Scheme LOAD
   (load-repl (open-input-file filename)))
 
-
 (define (load-repl port)
   (let ((exp (read port)))
     (cond ((eof-object? exp) 'done)
@@ -111,6 +110,8 @@
     (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
    ((eq? (car exp) 'lambda) (display "Hit lambda")
     (list 'closure exp env))
+   ((eq? (car exp) 'let) (display "Hit let")
+    (handle-let (cadr exp) (cddr exp) env))
    ((eq? (car exp) 'letrec)  (display "Hit letrec")
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
    (else
@@ -133,6 +134,8 @@
     (list 'closure exp env))
    ((eq? (car exp) 'letrec) (display "Hit Letrec")(newline)
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
+   ((eq? (car exp) 'let) (display "Hit Let")(newline)
+    (handle-let (cadr exp) (cddr exp) env))
    (else
      (display "Calling handle call")(newline)
     (handle-call (map (lambda (sub-exp) (my-eval3 sub-exp env)) exp)))
