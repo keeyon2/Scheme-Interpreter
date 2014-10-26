@@ -60,8 +60,6 @@
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
-     ;; (display "the global env after the top level insert is") (newline)
-     ;; (displayEnv *global-env*) (newline)
      (cadr exp)) ; just return the symbol being defined
     (else (my-eval exp *global-env*))
     ))
@@ -236,7 +234,10 @@
   (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
 	    ((null? defs) (display "We now have the env correct") (newline) 
                       (displayEnv env)
-		  		      (my-eval body env)   
+                      (display "Calling (my-eval body env)")(newline)
+                      (display "body: ")(display body)(newline)
+                      (display "(car body): ")(display (car body))(newline)
+   		  		      (my-eval (car body) env)
 			    )))	 	 
 
 
