@@ -195,6 +195,27 @@
   (display "Error: letrec not implemented yet") 
   (newline))
 
+(define (handle-let defs body env)
+  ;; return nothing if body empty
+  (cond ((not (pair? body)))
+	(else
+	    ;; (pair? defs) - recal function with no defs and new environment
+  	    (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
+		  ((not (pair? defs)) 
+	   		(cond ((pair? body) 
+		  		(my-eval (car body) env)   
+		 		(handle-let defs (cdr body) env))
+			      ))
+	    ))))	 	 
+
+
+;; Takes all the def's and returns 
+;; Should initially  pass in (Defs, envOrig, envOrig)
+(define (handle-let-defs-to-env defs envOrig envNew)
+  (cond ((not (pair? defs)) envNew)
+	((pair? defs)(handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car def)) (my-eval (cadr (car def)) envOrig)) envNew)))
+	))
+		
 
 (define (handle-call evald-exps)
   (let ((fn (car evald-exps))
