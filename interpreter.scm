@@ -57,20 +57,17 @@
   ;(display "Top-eval exp: ")
   ;(display exp)
   ;(newline)
-  (display "We are in top-eval")(newline)
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
-     (display "the global env after the top level insert is") (newline)
-     (displayEnv *global-env*) (newline)
+     ;; (display "the global env after the top level insert is") (newline)
+     ;; (displayEnv *global-env*) (newline)
      (cadr exp)) ; just return the symbol being defined
     (else (my-eval exp *global-env*))
     ))
 
 
 (define (lookup var env)
-  (display "We are in lookup")(newline)
-  (display "Lookup var: ")(display var)(newline)
   (let ((item (assoc var env)))  ;; assoc returns #f if var not found in env
     (cond ((not item) (display "Error: Undefined Symbol ")
               (display var) (newline))
@@ -246,24 +243,9 @@
 ;; Takes all the def's and returns 
 ;; Should initially  pass in (Defs, envOrig, envOrig)
 (define (handle-let-defs-to-env defs envOrig envNew)
-  (display "we are in handle-let-defs-to-env")(newline)
-  (display "defs: ")(displayEnv defs)(newline)
-  (display "envOrig:  ")(displayEnv envOrig)(newline)
-  (display "envNew:  ")(displayEnv envNew)(newline)
-  ;(display "(cadr defs):  ")(display (cadr defs))(newline)
-
   (cond ((null? defs) envNew)
-	;;((pair? defs)(handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew)))
-    ;;(append (list (car defs) (my-eval (cadr defs) envOrig)) envNew)
     ((pair? defs) 
-        (display "(car defs):  ")(display (car defs))(newline)
-        (display "(cdr defs):  ")(display (cdr defs))(newline)
-        (display "Please be var name:  ")(display (car (car defs)))(newline)
-        (display "Please be var = :  ")(display (cadr (car defs)))(newline)
-        (display "Should be pair (varname var=) :  ")(display (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)))(newline)
-        (handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew))
-        ;;(insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
-        ;;(append (list (car (car defs)) (my-eval (cadr defs) envOrig)) envNew)
+        (handle-let-defs-to-env (cdr defs) envOrig (cons (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew))
 	)))
 		
 
