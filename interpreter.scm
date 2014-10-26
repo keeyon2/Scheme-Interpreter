@@ -57,6 +57,7 @@
   ;(display "Top-eval exp: ")
   ;(display exp)
   ;(newline)
+  (display "We are in top-eval")(newline)
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
@@ -66,6 +67,8 @@
 
 
 (define (lookup var env)
+  (display "We are in lookup")(newline)
+  (display "Lookup var: ")(display var)(newline)
   (let ((item (assoc var env)))  ;; assoc returns #f if var not found in env
     (cond ((not item) (display "Error: Undefined Symbol ")
               (display var) (newline))
@@ -102,6 +105,12 @@
   (display "Calling my-eval on exp: ")
   (display exp)
   (newline)
+
+  (cond ((pair? exp) 
+  (display "(car exp) of that exp: ")
+  (display (car exp))))
+  (newline)
+
   (cond
    ((symbol? exp) (display "Hit symbol?") (lookup exp env))
    ((not (pair? exp)) (display "Hit not pair?") exp)
@@ -164,6 +173,7 @@
 
 
 (define (bind formals actuals)
+  (display "We are in bind")(newline)
   (cond ((null? formals) '())
     (else (cons (list (car formals) (car actuals))
             (bind (cdr formals) (cdr actuals))))
@@ -197,11 +207,15 @@
 
 (define (handle-let defs body env)
   ;; return nothing if body empty
-  (cond ((not (pair? body)))
+  (display "We are in handle-let")(newline)
+  (display "The defs are: ")(newline)
+  (displayEnv defs)
+  (cond ((null? body)(display "this could be true return")(newline))
 	(else
 	    ;; (pair? defs) - recal function with no defs and new environment
   	    (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
-		  ((not (pair? defs)) 
+		  ((null? defs) (display "We now have the env correct") (newline) 
+                              (displayEnv env)
 	   		(cond ((pair? body) 
 		  		(my-eval (car body) env)   
 		 		(handle-let defs (cdr body) env))
@@ -212,8 +226,18 @@
 ;; Takes all the def's and returns 
 ;; Should initially  pass in (Defs, envOrig, envOrig)
 (define (handle-let-defs-to-env defs envOrig envNew)
-  (cond ((not (pair? defs)) envNew)
-	((pair? defs)(handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car def)) (my-eval (cadr (car def)) envOrig)) envNew)))
+  (display "we are in handle-let-defs-to-env")(newline)
+  (display "defs: ")(displayEnv defs)(newline)
+  (display "envOrig:  ")(displayEnv envOrig)(newline)
+  (display "envNew:  ")(displayEnv envNew)(newline)
+  ;(display "(cadr defs):  ")(display (cadr defs))(newline)
+
+  (cond ((null? defs) envNew)
+	;;((pair? defs)(handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew)))
+    ;;(append (list (car defs) (my-eval (cadr defs) envOrig)) envNew)
+    ((pair? defs) 
+        (display "(car defs):  ")(display (car defs))(newline)
+        (handle-let-defs-to-env (cdr defs) envOrig (append (list  (car defs)) envNew)))
 	))
 		
 
@@ -237,6 +261,14 @@
     (display "\n")
     (display "\n"))
 
+(define (displayEnv env)
+  (cond ((null? env))
+	(else 
+        (display (car env))
+	    (newline)
+	    (displayEnv (cdr env)))
+	))
+	
 ;;-------------------- Here is the initial global environment --------
 
 (define *global-env*
