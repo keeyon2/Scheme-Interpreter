@@ -61,6 +61,8 @@
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
+     (display "the global env after the top level insert is") (newline)
+     (displayEnv *global-env*) (newline)
      (cadr exp)) ; just return the symbol being defined
     (else (my-eval exp *global-env*))
     ))
@@ -100,10 +102,16 @@
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
 
-(define (my-eval exp env)
+(define (my-evalPrint exp env)
   (newline)
   (display "Calling my-eval on exp: ")
   (display exp)
+  (newline)
+
+  (newline)
+  (display "The env of this call is")
+  (newline)
+  (displayEnv env)
   (newline)
 
   (cond ((pair? exp) 
@@ -125,6 +133,23 @@
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
    (else
      (display "Calling handle call")
+    (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
+   ))
+
+(define (my-eval exp env)
+  (cond
+   ((symbol? exp) (lookup exp env))
+   ((not (pair? exp)) exp)
+   ((eq? (car exp) 'quote) (cadr exp))
+   ((eq? (car exp) 'if) 
+    (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
+   ((eq? (car exp) 'lambda) 
+    (list 'closure exp env))
+   ((eq? (car exp) 'let) 
+    (handle-let (cadr exp) (cddr exp) env))
+   ((eq? (car exp) 'letrec)  
+    (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
+   (else
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
 
@@ -210,17 +235,12 @@
   (display "We are in handle-let")(newline)
   (display "The defs are: ")(newline)
   (displayEnv defs)
-  (cond ((null? body)(display "this could be true return")(newline))
-	(else
-	    ;; (pair? defs) - recal function with no defs and new environment
-  	    (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
-		  ((null? defs) (display "We now have the env correct") (newline) 
-                              (displayEnv env)
-	   		(cond ((pair? body) 
-		  		(my-eval (car body) env)   
-		 		(handle-let defs (cdr body) env))
-			      ))
-	    ))))	 	 
+  ;; (pair? defs) - recal function with no defs and new environment
+  (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
+	    ((null? defs) (display "We now have the env correct") (newline) 
+                      (displayEnv env)
+		  		      (my-eval body env)   
+			    )))	 	 
 
 
 ;; Takes all the def's and returns 
@@ -237,8 +257,14 @@
     ;;(append (list (car defs) (my-eval (cadr defs) envOrig)) envNew)
     ((pair? defs) 
         (display "(car defs):  ")(display (car defs))(newline)
-        (handle-let-defs-to-env (cdr defs) envOrig (append (list  (car defs)) envNew)))
-	))
+        (display "(cdr defs):  ")(display (cdr defs))(newline)
+        (display "Please be var name:  ")(display (car (car defs)))(newline)
+        (display "Please be var = :  ")(display (cadr (car defs)))(newline)
+        (display "Should be pair (varname var=) :  ")(display (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)))(newline)
+        (handle-let-defs-to-env (cdr defs) envOrig (append (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew))
+        ;;(insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
+        ;;(append (list (car (car defs)) (my-eval (cadr defs) envOrig)) envNew)
+	)))
 		
 
 (define (handle-call evald-exps)
@@ -298,4 +324,5 @@
     (list 'eof-object? (list 'primitive-function eof-object?))
     (list 'load (list 'primitive-function my-load))  ;;defined above
     (list 'newline2 (list 'primitive-function newline2))
+    (list 'displayEnv (list 'primitive-function displayEnv))
     ))
