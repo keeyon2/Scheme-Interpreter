@@ -9,7 +9,9 @@
 
 (define (test-let)
   (let ((one 1) (two (+ one 1)))
-    (display "Should return 101") (newline)
-    two))
+    (display "Should return 101") 
+    (newline)
+    (display two))
+  )
 
 

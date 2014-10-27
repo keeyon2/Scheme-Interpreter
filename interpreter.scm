@@ -69,7 +69,8 @@
   (let ((item (assoc var env)))  ;; assoc returns #f if var not found in env
     (cond ((not item) (display "Error: Undefined Symbol ")
               (display var) (newline))
-      (else (cadr item))
+      (else 
+        (cadr item))
       )))
 
 (define (handle-if test then-exp else-exp env)
@@ -97,7 +98,7 @@
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
 
-(define (my-evalPrint exp env)
+(define (my-evalPrints exp env)
   (newline)
   (display "Calling my-eval on exp: ")
   (display exp)
@@ -148,50 +149,6 @@
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
 
-(define (my-eval3 exp env)
-  (cond
-   (display "my eval exp: ")
-   (display exp)
-   (newline)
-   ;; This is start of real code
-   ((symbol? exp) ((display "Hit symbol? ")(newline)(lookup exp env)))
-   ((not (pair? exp)) (display "Hit not pair?")(newline) exp)
-   ((eq? (car exp) 'quote) (display "Hit exp='qoute") (cadr exp))
-   ((eq? (car exp) 'if) (display "Hit If")(newline)
-    (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
-   ((eq? (car exp) 'lambda) (display "Hit Lambda")(newline)
-    (list 'closure exp env))
-   ((eq? (car exp) 'letrec) (display "Hit Letrec")(newline)
-    (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
-   ((eq? (car exp) 'let) (display "Hit Let")(newline)
-    (handle-let (cadr exp) (cddr exp) env))
-   (else
-     (display "Calling handle call")(newline)
-    (handle-call (map (lambda (sub-exp) (my-eval3 sub-exp env)) exp)))
-   ))
-
-
-;; Still need to do some shit
-(define (my-eval2 exp env)
-  ;(display "my-eval exp: ")
-  ;(display exp)
-  ;(newline)
-  (cond
-   ((symbol? exp) (lookup exp env) ;(display "SymbolCalled: ") (display exp) 
-    (newline))
-   ((not (pair? exp)) exp)
-   ((eq? (car exp) 'quote) (cadr exp))
-   ((eq? (car exp) 'if)
-    (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
-   ((eq? (car exp) 'lambda)
-    (list 'closure exp env))
-   ((eq? (car exp) 'letrec)
-    (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
-   (else
-    (handle-call (map (lambda (sub-exp) (my-eval2 sub-exp env)) exp)))
-   ))
-
-
 (define (bind formals actuals)
   (display "We are in bind")(newline)
   (cond ((null? formals) '())
@@ -227,17 +184,24 @@
 
 (define (handle-let defs body env)
   ;; return nothing if body empty
-  (display "We are in handle-let")(newline)
-  (display "The defs are: ")(newline)
-  (displayEnv defs)
+  ;; (display "We are in handle-let")(newline)
+  ;; (display "The defs are: ")(newline)
+  ;; (displayEnv defs)
+  ;; (newline)(display "And the body is: ")(newline)
+  ;; (displayEnv body)
   ;; (pair? defs) - recal function with no defs and new environment
   (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
-	    ((null? defs) (display "We now have the env correct") (newline) 
-                      (displayEnv env)
-                      (display "Calling (my-eval body env)")(newline)
-                      (display "body: ")(display body)(newline)
-                      (display "(car body): ")(display (car body))(newline)
-   		  		      (my-eval (car body) env)
+	    ((null? defs) ;; (display "We now have the env correct") (newline) 
+                      ;; (displayEnv env)
+                      ;; (display "Calling (my-eval body env)")(newline)
+                      ;; (display "body: ")(display body)(newline)
+                      ;; (display "(car body): ")(display (car body))(newline)
+                      (cond ((pair? body) 
+                       ;; (display "body: ")(display body)(newline)
+                       ;; (display "(car body): ")(display (car body))(newline)
+   		  		        (my-eval (car body) env)
+                        (handle-let defs (cdr body) env))
+                            )
 			    )))	 	 
 
 
@@ -306,6 +270,6 @@
     (list 'close-input-port (list 'primitive-function close-input-port))
     (list 'eof-object? (list 'primitive-function eof-object?))
     (list 'load (list 'primitive-function my-load))  ;;defined above
-    (list 'newline2 (list 'primitive-function newline2))
+    (list 'newline (list 'primitive-function newline2))
     (list 'displayEnv (list 'primitive-function displayEnv))
     ))
