@@ -14,4 +14,9 @@
     (display two))
   )
 
-
+(define (test-let*)
+  (let* ((one 1) (two (+ one 1)))
+    (display "Should return 2") 
+    (newline)
+    (display two))
+  )

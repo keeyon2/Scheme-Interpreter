@@ -143,6 +143,8 @@
     (list 'closure exp env))
    ((eq? (car exp) 'let) 
     (handle-let (cadr exp) (cddr exp) env))
+   ((eq? (car exp) 'let*) 
+    (handle-let* (cadr exp) (cddr exp) env))
    ((eq? (car exp) 'letrec)  
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
    (else
@@ -213,6 +215,15 @@
         (handle-let-defs-to-env (cdr defs) envOrig (cons (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew))
 	)))
 		
+(define (handle-let* defs body env)
+  (cond ((pair? defs) 
+         (handle-let* (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
+         ((null? defs)
+          (cond ((pair? body)
+                 (my-eval (car body) env)
+                 (handle-let* defs (cdr body) env))
+                )
+          )))
 
 (define (handle-call evald-exps)
   (let ((fn (car evald-exps))
@@ -229,9 +240,6 @@
     )))
 
   (define (newline2)
-    (display "\n")
-    (display "\n")
-    (display "\n")
     (display "\n"))
 
 (define (displayEnv env)
