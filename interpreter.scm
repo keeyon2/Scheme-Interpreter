@@ -14,8 +14,6 @@
       )))
 
 ;; Use this to test shit later
-(define testExecution (lambda () (+ (4 * 1)(2 * 9))))
-
 (define (testEx) 
   (+ (4 * 1)(2 * 9))
   )
@@ -49,20 +47,32 @@
   (set-car! L val)
   )
 
-
 ;; (define ....) is only allowed at the top level and affects only the 
 ;; global environment. Only the basic form of define is supported here.
 
 (define (top-eval exp)
-  ;(display "Top-eval exp: ")
-  ;(display exp)
-  ;(newline)
+  ;; Whether or not we have an exp that is a pair or not
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
-     (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
-     (cadr exp)) ; just return the symbol being defined
+     ;; Define of var
+     (cond ((not (pair? (cadr exp))) 
+                 (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
+                 (cadr exp)) ; just return the symbol being defined
+            ;; Take care of function def  //Look in notes
+            ((pair? (cadr exp))
+              (insert! (list (car (cadr exp)) (my-eval (cons 'lambda (cons (cdr (cadr exp)) (cddr exp))) *global-env*)) *global-env*)
+             )))        
     (else (my-eval exp *global-env*))
     ))
+
+
+(define (top-evalOrig exp)
+  (cond ((not (pair? exp)) (my-eval exp *global-env*))
+	((eq? (car exp) 'define)   
+	 (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
+	 (cadr exp)) ; just return the symbol being defined
+	(else (my-eval exp *global-env*))
+	))
 
 
 (define (lookup var env)
@@ -94,7 +104,7 @@
    ((eq? (car exp) 'letrec)     
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
    (else
-     (display "Calling handle call")(newline)
+     ;; (display "Calling handle call")(newline)
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
 
@@ -125,6 +135,8 @@
     (list 'closure exp env))
    ((eq? (car exp) 'let) (display "Hit let")
     (handle-let (cadr exp) (cddr exp) env))
+   ((eq? (car exp) 'let*) 
+    (handle-let* (cadr exp)(display "Hit let*") (cddr exp) env))
    ((eq? (car exp) 'letrec)  (display "Hit letrec")
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
    (else
@@ -152,7 +164,7 @@
    ))
 
 (define (bind formals actuals)
-  (display "We are in bind")(newline)
+  ;; (display "We are in bind")(newline)
   (cond ((null? formals) '())
     (else (cons (list (car formals) (car actuals))
             (bind (cdr formals) (cdr actuals))))
@@ -229,7 +241,8 @@
   (let ((fn (car evald-exps))
     (args (cdr evald-exps)))
    (cond
-    ((eq? (car fn) 'closure) (display "In handle Call's Closure")(newline)
+    ((eq? (car fn) 'closure) 
+     ;; (display "In handle Call's Closure")(newline)
      (let ((formals (cadr (cadr fn)))
        (body (cddr (cadr fn)))
        (env (caddr fn)))

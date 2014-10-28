@@ -9,7 +9,6 @@
   (display "Should return 300") (newline)
   (foo one two))
 
-
 (define (test-let)
   (let ((one 1) (two (+ one 1)))
     (display "Should return 101") (newline)
