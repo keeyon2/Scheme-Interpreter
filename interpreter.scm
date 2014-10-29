@@ -193,8 +193,25 @@
 
 
 (define (handle-letrec defs body env)
-  (display "Error: letrec not implemented yet") 
-  (newline))
+    (cond ((pair? defs) 
+      (handle-letrec (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
+         ((null? defs)
+          (cond ((pair? body)
+                 (my-eval (car body) env)
+                 (handle-letrec defs (cdr body) env))
+                )
+          ))
+)
+
+;; Creates list of all uninitialized list elements
+(define (create-uninitialized-list defs undefinedList)
+   (cond ((null? defs) undefinedList)
+         (else 
+          (create-uninitialized-list (cdr defs) (cons (list (car (car defs)) '*undefined) undefinedList))
+         )))
+
+;; To test
+(define TestList (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
 
 (define (handle-let defs body env)
   ;; return nothing if body empty
