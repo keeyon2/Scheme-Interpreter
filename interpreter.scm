@@ -13,11 +13,6 @@
          (repl))
       )))
 
-;; Use this to test shit later
-(define (testEx) 
-  (+ (4 * 1)(2 * 9))
-  )
-
 
 (define (my-load filename)       ;; don't want to redefine the Scheme LOAD
   (load-repl (open-input-file filename)))
@@ -194,14 +189,21 @@
 
 (define (handle-letrec defs body env)
     (cond ((pair? defs) 
-      (handle-letrec (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
-         ((null? defs)
-          (cond ((pair? body)
-                 (my-eval (car body) env)
-                 (handle-letrec defs (cdr body) env))
-                )
-          ))
-)
+           (let* ((newEnv (append (create-uninitialized-list defs '()) env))
+                  (newEnv2 (update-uninitialized-list defs newEnv)))
+                (
+                 (display "newEnv is: ")(newline)(displayEnv newEnv)(newline)
+                 (display "newEnv2 is: ")(newline)(displayEnv newEnv2)(newline))
+                ))))
+           ;; This creates the new-env which is step 2
+           ;; (append (create-uninitialized-list defs '()) env)
+      ;; (handle-letrec (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
+         ;; ((null? defs)
+         ;;  (cond ((pair? body)
+         ;;         (my-eval (car body) env)
+         ;;         (handle-letrec defs (cdr body) env))
+         ;;        )
+         ;;  )))
 
 ;; Creates list of all uninitialized list elements
 (define (create-uninitialized-list defs undefinedList)
@@ -210,8 +212,21 @@
           (create-uninitialized-list (cdr defs) (cons (list (car (car defs)) '*undefined) undefinedList))
          )))
 
+(define (update-uninitialized-list defs env)
+  (cond ((null? defs) env)
+        (else
+          (update-uninitialized-list (cdr defs) (set-cdr! (assoc (car (car defs)) env) (my-eval (cdr (car defs)) env)))
+          )))
+
+(define (append-each-list-item newList oldList)
+    (cond ((null? newList) oldList)
+          (else (append-each-list-item (cdr newList) (cons (car newList) oldList)))
+))
+
 ;; To test
-(define TestList (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
+(define TestList1 (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
+(define TestList2 (list (list 'e 5) (list 'f 6) (list 'g 7) (list 'h 8)))
+(define TestEnv1 (append (create-uninitialized-list TestList1 '()) TestList1))
 
 (define (handle-let defs body env)
   ;; return nothing if body empty
