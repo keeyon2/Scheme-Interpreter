@@ -25,6 +25,16 @@
           (load-repl port)))
       )))
 
+(define (displayEnv env)
+  (cond ((null? env))
+	(else 
+        (newline)
+        (newline)
+        (display (car env))
+	    (newline)
+        (newline)
+	    (displayEnv (cdr env)))
+	))
 
 
 ;; insert!, below, is a destructive update of a list L, inserting the
@@ -47,6 +57,7 @@
 
 (define (top-eval exp)
   ;; Whether or not we have an exp that is a pair or not
+  ;;(display "top-eval env: ")(newline)(displayEnv *global-env*)(newline)
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      ;; Define of var
@@ -140,6 +151,8 @@
    ))
 
 (define (my-eval exp env)
+  (display "We are calling my-eval with exp: ")(display exp)(newline)
+  (display "With the env: ")(newline)(displayEnv env)(newline)
   (cond
    ((symbol? exp) (lookup exp env))
    ((not (pair? exp)) exp)
@@ -189,34 +202,58 @@
 
 (define (handle-letrec defs body env)
     (cond ((pair? defs) 
-           (let* ((newEnv (append (create-uninitialized-list defs '()) env))
-                  (newEnv2 (update-uninitialized-list defs newEnv)))
-                (
-                 (display "newEnv is: ")(newline)(displayEnv newEnv)(newline)
-                 (display "newEnv2 is: ")(newline)(displayEnv newEnv2)(newline))
-                ))))
-           ;; This creates the new-env which is step 2
-           ;; (append (create-uninitialized-list defs '()) env)
-      ;; (handle-letrec (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
-         ;; ((null? defs)
-         ;;  (cond ((pair? body)
-         ;;         (my-eval (car body) env)
-         ;;         (handle-letrec defs (cdr body) env))
-         ;;        )
-         ;;  )))
+           ;; This is the Final Call
+           ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
+            ;;(apply-body-with-env body (update-uninitialized-list defs (create-uninitialized-list defs env)))
 
+            ;; This is the Env the Check to make sure create-uninitialized-list works
+            ;;  (create-uninitialized-list defs env) Start Under Here   
+            ;; (display "The env before calling createUnintList" )(displayEnv env)(newline)
+            ;; (display "The env after calling createUnintList" )(displayEnv (create-uninitialized-list defs env))(newline)
+
+            ;; This is updateing-uninitialized-List WORKS
+            ;; (display "The Env after calling (update uninitialized) ")(newline)
+            ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
+
+            ;; This is to test if running the body works
+            ;;(display "(caddr body): ")(display (caddr body))(newline)
+
+
+            ;;*****  NOTICE **** This should actually be car body and be called in apply all =)
+            (my-eval (caddr body) (update-uninitialized-list defs (create-uninitialized-list defs env)))
+           )))
+
+(define (apply-body-with-env body env)
+  (cond ((pair? body)
+         (display "The body is: ")(displayEnv body)(newline)
+         (display "The env is: ")(displayEnv env)(newline)
+         (my-eval (car body) env)
+         (apply-body-with-env (cdr body) env))
+        ))
+          
 ;; Creates list of all uninitialized list elements
 (define (create-uninitialized-list defs undefinedList)
    (cond ((null? defs) undefinedList)
          (else 
+           ;(display "Create List defs are: ")(displayEnv defs)(newline)
+           ;(display "Create List undefinedList: ")(displayEnv undefinedList)(newline)
+           ;; (display "The body is: ")(displayEnv defs)(newline)
+           ;; (display "The env is: ")(displayEnv undefinedList)(newline)
           (create-uninitialized-list (cdr defs) (cons (list (car (car defs)) '*undefined) undefinedList))
          )))
 
+;; Update the Uninitialized List
 (define (update-uninitialized-list defs env)
   (cond ((null? defs) env)
-        (else
-          (update-uninitialized-list (cdr defs) (set-cdr! (assoc (car (car defs)) env) (my-eval (cdr (car defs)) env)))
-          )))
+        ((pair? defs)
+            ;; Original!
+            ;; (set-cdr! (assoc (car (car defs)) env) (my-eval (cadr (car defs)) env))
+            (display "In Update, the (cadr (car defs)) is: ")(display (cadr (car defs)))
+            (newline)(newline)(newline)
+            ;; THIS LINE WORKS FUCK YES
+            (set-cdr! (assoc (car (car defs)) env) (list (my-eval (cadr (car defs)) env)))
+            (update-uninitialized-list (cdr defs) env))
+    ))
 
 (define (append-each-list-item newList oldList)
     (cond ((null? newList) oldList)
@@ -224,30 +261,17 @@
 ))
 
 ;; To test
-(define TestList1 (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
-(define TestList2 (list (list 'e 5) (list 'f 6) (list 'g 7) (list 'h 8)))
-(define TestEnv1 (append (create-uninitialized-list TestList1 '()) TestList1))
+;;(define TestList1 (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
+;;(define TestList2 (list (list 'e 5) (list 'f 6) (list 'g 7) (list 'h 8)))
+;;(define TestEnv1 (append (create-uninitialized-list TestList1 '()) TestList1))
 
 (define (handle-let defs body env)
-  ;; return nothing if body empty
-  ;; (display "We are in handle-let")(newline)
-  ;; (display "The defs are: ")(newline)
-  ;; (displayEnv defs)
-  ;; (newline)(display "And the body is: ")(newline)
-  ;; (displayEnv body)
-  ;; (pair? defs) - recal function with no defs and new environment
-  (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
-	    ((null? defs) ;; (display "We now have the env correct") (newline) 
-                      ;; (displayEnv env)
-                      ;; (display "Calling (my-eval body env)")(newline)
-                      ;; (display "body: ")(display body)(newline)
-                      ;; (display "(car body): ")(display (car body))(newline)
-                      (cond ((pair? body) 
-                       ;; (display "body: ")(display body)(newline)
-                       ;; (display "(car body): ")(display (car body))(newline)
-   		  		        (my-eval (car body) env)
-                        (handle-let defs (cdr body) env))
-                            )
+    (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
+	    ((null? defs) 
+         (cond ((pair? body) 
+   		  		   (my-eval (car body) env)
+                   (handle-let defs (cdr body) env))
+                   )
 			    )))	 	 
 
 
@@ -287,14 +311,7 @@
   (define (newline2)
     (display "\n"))
 
-(define (displayEnv env)
-  (cond ((null? env))
-	(else 
-        (display (car env))
-	    (newline)
-	    (displayEnv (cdr env)))
-	))
-	
+
 ;;-------------------- Here is the initial global environment --------
 
 (define *global-env*
