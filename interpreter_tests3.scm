@@ -8,6 +8,7 @@
     (f 5)
     (newline)
     (newline)
+    (display (f 5))
     ;; (f 1)
     ))
 

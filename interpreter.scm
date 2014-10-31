@@ -25,6 +25,8 @@
           (load-repl port)))
       )))
 
+;; This used to cleanly show env
+;; Do not need for final production
 (define (displayEnv env)
   (cond ((null? env))
 	(else 
@@ -57,29 +59,19 @@
 
 (define (top-eval exp)
   ;; Whether or not we have an exp that is a pair or not
-  ;;(display "top-eval env: ")(newline)(displayEnv *global-env*)(newline)
   (cond ((not (pair? exp)) (my-eval exp *global-env*))
     ((eq? (car exp) 'define)   
      ;; Define of var
      (cond ((not (pair? (cadr exp))) 
                  (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
                  (cadr exp)) ; just return the symbol being defined
+
             ;; Take care of function def  //Look in notes
             ((pair? (cadr exp))
               (insert! (list (car (cadr exp)) (my-eval (cons 'lambda (cons (cdr (cadr exp)) (cddr exp))) *global-env*)) *global-env*)
              )))        
     (else (my-eval exp *global-env*))
     ))
-
-
-(define (top-evalOrig exp)
-  (cond ((not (pair? exp)) (my-eval exp *global-env*))
-	((eq? (car exp) 'define)   
-	 (insert! (list (cadr exp) (my-eval (caddr exp) *global-env*)) *global-env*)
-	 (cadr exp)) ; just return the symbol being defined
-	(else (my-eval exp *global-env*))
-	))
-
 
 (define (lookup var env)
   (let ((item (assoc var env)))  ;; assoc returns #f if var not found in env
@@ -95,64 +87,7 @@
       (my-eval else-exp env)))
 
 
-;; still missing let, let*, letrec, the syntax for (define (f x) ...),
-;; cond, begin (block).
-
-(define (my-evalOriginal exp env)
-  (cond
-   ((symbol? exp) (lookup exp env))
-   ((not (pair? exp))  exp)
-   ((eq? (car exp) 'quote)  (cadr exp))
-   ((eq? (car exp) 'if) 
-    (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
-   ((eq? (car exp) 'lambda) 
-    (list 'closure exp env))
-   ((eq? (car exp) 'letrec)     
-    (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
-   (else
-     ;; (display "Calling handle call")(newline)
-    (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
-   ))
-
-(define (my-evalPrints exp env)
-  (newline)
-  (display "Calling my-eval on exp: ")
-  (display exp)
-  (newline)
-
-  (newline)
-  (display "The env of this call is")
-  (newline)
-  (displayEnv env)
-  (newline)
-
-  (cond ((pair? exp) 
-  (display "(car exp) of that exp: ")
-  (display (car exp))))
-  (newline)
-
-  (cond
-   ((symbol? exp) (display "Hit symbol?") (lookup exp env))
-   ((not (pair? exp)) (display "Hit not pair?") exp)
-   ((eq? (car exp) 'quote) (display "Hit 'qoute") (cadr exp))
-   ((eq? (car exp) 'if) (display "Hit if")
-    (handle-if (cadr exp) (caddr exp) (cadddr exp) env))
-   ((eq? (car exp) 'lambda) (display "Hit lambda")
-    (list 'closure exp env))
-   ((eq? (car exp) 'let) (display "Hit let")
-    (handle-let (cadr exp) (cddr exp) env))
-   ((eq? (car exp) 'let*) 
-    (handle-let* (cadr exp)(display "Hit let*") (cddr exp) env))
-   ((eq? (car exp) 'letrec)  (display "Hit letrec")
-    (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
-   (else
-     (display "Calling handle call")
-    (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
-   ))
-
 (define (my-eval exp env)
-  ;; (display "We are calling my-eval with exp: ")(display exp)(newline)
-  ;; (display "With the env: ")(newline)(displayEnv env)(newline)
   (cond
    ((symbol? exp) (lookup exp env))
    ((not (pair? exp)) exp)
@@ -172,7 +107,6 @@
    ))
 
 (define (bind formals actuals)
-  ;; (display "We are in bind")(newline)
   (cond ((null? formals) '())
     (else (cons (list (car formals) (car actuals))
             (bind (cdr formals) (cdr actuals))))
@@ -199,99 +133,25 @@
 ;    new name with its correspondinng value.
 ; 5) evaluate the body of the letrec using new-env
 
-
-(define (handle-letrecAll defs body env)
-    (cond ((pair? body) 
-           ;; This is the Final Call
-           ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
-            ;;(apply-body-with-env body (update-uninitialized-list defs (create-uninitialized-list defs env)))
-
-            ;; This is the Env the Check to make sure create-uninitialized-list works
-            ;;  (create-uninitialized-list defs env) Start Under Here   
-            ;; (display "The env before calling createUnintList" )(displayEnv env)(newline)
-            ;; (display "The env after calling createUnintList" )(displayEnv (create-uninitialized-list defs env))(newline)
-
-            ;; This is updateing-uninitialized-List WORKS
-            ;; (display "The Env after calling (update uninitialized) ")(newline)
-            ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
-
-            ;; This is to test if running the body works
-            ;;(display "(caddr body): ")(display (caddr body))(newline)
-
-
-            ;;*****  NOTICE **** This should actually be car body and be called in apply all =)
-            ;; THIS Recursive that is not yet working
-             ;; (display "Letrec body: ")(display body)(newline)
-             ;; (display "(cdr body): ")(display (cdr body))(newline)
-             ;; (display "(cddr body): ")(display (cddr body))(newline)
-             ;; (cond ((null? (cddr body))
-             ;;         (display "(cddr body) is empty")(newline)
-             ;;         (handle-letrec defs (cadr body) (my-eval (car body) (update-uninitialized-list defs (create-uninitialized-list defs env)))))
-             ;;       ((pair? (cddr body))
-             ;;         (display "(cddr body) is NOT empty")(newline)
-             ;;         (handle-letrec defs (cdr body) (my-eval (car body) (update-uninitialized-list defs (create-uninitialized-list defs env)))))
-             ;; )
-             ;; (handle-letrec defs (cdr body) (my-eval (car body) (update-uninitialized-list defs (create-uninitialized-list defs env))))
-            
-           (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-             (my-eval (car body) newEnv))
-           
-           
-           
-           ;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           ;  (my-eval (car body) envNew))
-           
-           ;; This is all of them attempt
-           ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-              ;;   (apply-body-with-env body envNew))
-           
-           
-           ;; (apply-body-with-env body (my-eval (car body) (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           )))
-
 (define (handle-letrec defs body env)
     (cond ((pair? body) 
-           ;; This is the Final Call
-           ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
-            ;;(apply-body-with-env body (update-uninitialized-list defs (create-uninitialized-list defs env)))
-
-            ;; This is the Env the Check to make sure create-uninitialized-list works
-            ;;  (create-uninitialized-list defs env) Start Under Here   
-            ;; (display "The env before calling createUnintList" )(displayEnv env)(newline)
-            ;; (display "The env after calling createUnintList" )(displayEnv (create-uninitialized-list defs env))(newline)
-
-            ;; This is updateing-uninitialized-List WORKS
-            ;; (display "The Env after calling (update uninitialized) ")(newline)
-            ;; (displayEnv (update-uninitialized-list defs (create-uninitialized-list defs env)))
-
-            ;; This is to test if running the body works
-            ;;(display "(caddr body): ")(display (caddr body))(newline)
-
+            ;; Create Uninitialized takes care of Step 1 listed above
+            ;; Update Uninitialzed List takes care of Steps 2, 3 and 4 from above
+            ;; Apply-body-with-env takes care of Step 5 from above
            
-           (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-             (my-eval (car body) envNew))
-           
-           (handle-letrec defs (cdr body) env)
+            (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
+                (apply-body-with-env body envNew))
+       )))
 
-           ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           ;;  (my-eval (car body) envNew))
-           ;;(handle-letrec defs (cdr body) env) 
-           
-           ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           ;;  (apply-body-with-env body envNew))
-           
-           ;;*****  NOTICE **** This should actually be car body and be called in apply all =)
-            ;;(my-eval (car body) (update-uninitialized-list defs (create-uninitialized-list defs env)))
-            ;; (apply-body-with-env body (my-eval (caddr body) (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           )))
-
+;; Evaluates all body statements with current Env
 (define (apply-body-with-env body env)
   (cond ((pair? body)
          (my-eval (car body) env)
          (apply-body-with-env (cdr body) env))
         ))
           
-;; Creates list of all uninitialized list elements
+;; Creates list of all vars as pair with *undefined 
+;; If we have var x and y, list will be pairs that looks like ((x *undefined) (y *undefined))
 (define (create-uninitialized-list defs undefinedList)
    (cond ((null? defs) undefinedList)
          (else 
@@ -299,6 +159,7 @@
          )))
 
 ;; Update the Uninitialized List
+;; Makes Env now have appropriate operation instead of '*undefined as second part of pair
 (define (update-uninitialized-list defs env)
   (cond ((null? defs)
          env)
@@ -318,12 +179,10 @@
           (else (append-each-list-item (cdr newList) (cons (car newList) oldList)))
 ))
 
-;; To test
-;;(define TestList1 (list (list 'a 1) (list 'b 2) (list 'c 3) (list 'd 4)))
-;;(define TestList2 (list (list 'e 5) (list 'f 6) (list 'g 7) (list 'h 8)))
-;;(define TestEnv1 (append (create-uninitialized-list TestList1 '()) TestList1))
 
 (define (handle-let defs body env)
+    ;; First time we run, we pass info to handle-let-defs, which returns to us
+    ;; Null defs, to always let us evaluate the rest of body with new env
     (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
 	    ((null? defs) 
          (cond ((pair? body) 
@@ -334,6 +193,8 @@
 
 
 ;; Takes all the def's and returns 
+;; This will keep original env, make a new env, but will
+;; continute to evaluate each expression with original env
 ;; Should initially  pass in (Defs, envOrig, envOrig)
 (define (handle-let-defs-to-env defs envOrig envNew)
   (cond ((null? defs) envNew)
@@ -341,6 +202,9 @@
         (handle-let-defs-to-env (cdr defs) envOrig (cons (list (car (car defs)) (my-eval (cadr (car defs)) envOrig)) envNew))
 	)))
 		
+;; Unlike handle-let, let* allows recursion, for each new def can have previous def in.
+;; We don't need to store orig and new env, we just keep updating env with each def and use
+;; new env to analyze each new def
 (define (handle-let* defs body env)
   (cond ((pair? defs) 
          (handle-let* (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
@@ -351,12 +215,12 @@
                 )
           )))
 
+;; Handling calls like a boss
 (define (handle-call evald-exps)
   (let ((fn (car evald-exps))
     (args (cdr evald-exps)))
    (cond
     ((eq? (car fn) 'closure) 
-     ;; (display "In handle Call's Closure")(newline)
      (let ((formals (cadr (cadr fn)))
        (body (cddr (cadr fn)))
        (env (caddr fn)))
@@ -366,6 +230,9 @@
     (else (display "Error: Calling non-function"))
     )))
 
+;; We must add this into our Global env as well, associate it so
+;; When repl reads newline, we instead call this function instead
+;; of the built in newline
   (define (newline2)
     (display "\n"))
 
