@@ -102,6 +102,8 @@
     (handle-let* (cadr exp) (cddr exp) env))
    ((eq? (car exp) 'letrec)  
     (handle-letrec (cadr exp) (cddr exp) env))  ;; see explanation below
+   ((eq? (car exp) 'cond)
+    (handle-cond (cdr exp) env))
    (else
     (handle-call (map (lambda (sub-exp) (my-eval sub-exp env)) exp)))
    ))
@@ -119,7 +121,21 @@
           (handle-block (cdr block) env))
     ))
     
+(define (handle-cond expressions env)
+  ;; (display "First need to evaluate (car (car expressions))")(newline)
+  ;; (display "If True, execute (cdr (car ex)). This can be done w/ applybody")(newline)
+  ;; (display "If not true, recurse with (cdr expression) and env)")(newline)
+  ;; (let 
+  ;;   t (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env)) 
+  ;;   ;; ((if t (apply-body-with-env (cdr (car ex)) env) (handle-cond (cdr expressions) env))))
+  ;;   (display "t"))
 
+  (let* ((firstElse (if (eq? (car (car expressions)) 'else) #t #f))
+        (firstExpT (if (my-eval (car (car expressions)) env) #t #f))
+        (firstTrue (or firstElse firstExpT)))
+    (if firstTrue (apply-body-with-env(cdr (car expressions))) (handle-cond (cdr expressions) env))
+    )
+  )
 ; Here's how handle-letrec should implement LETREC
 ; 0) The parameters are the defs,(e.g. ((f exp1) (g exp2)), and the body,
 ;    which is a list of expressions, e.g. ((display x) (f (g 1)))
