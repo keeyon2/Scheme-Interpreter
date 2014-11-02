@@ -130,11 +130,15 @@
   ;;   ;; ((if t (apply-body-with-env (cdr (car ex)) env) (handle-cond (cdr expressions) env))))
   ;;   (display "t"))
 
-  (let* ((firstElse (if (eq? (car (car expressions)) 'else) #t #f))
-        (firstExpT (if (my-eval (car (car expressions)) env) #t #f))
-        (firstTrue (or firstElse firstExpT)))
-    (if firstTrue (apply-body-with-env(cdr (car expressions))) (handle-cond (cdr expressions) env))
+  (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
+    (if first_true (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
     )
+  
+    ;; (let* ((firstElse (if (eq? (car (car expressions)) 'else) #t #f))
+    ;;    (firstExpT (if (my-eval (car (car expressions)) env) #t #f))
+    ;;    (firstTrue (or firstElse firstExpT)))
+    ;;(if firstTrue (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
+    
   )
 ; Here's how handle-letrec should implement LETREC
 ; 0) The parameters are the defs,(e.g. ((f exp1) (g exp2)), and the body,
