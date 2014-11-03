@@ -21,23 +21,9 @@
   (let ((exp (read port)))
     (cond ((eof-object? exp) 'done)
       (else (let ((res (top-eval exp)))
-          (display res)
+          ;;(display res)
           (load-repl port)))
       )))
-
-;; This used to cleanly show env
-;; Do not need for final production
-(define (displayEnv env)
-  (cond ((null? env))
-	(else 
-        (newline)
-        (newline)
-        (display (car env))
-	    (newline)
-        (newline)
-	    (displayEnv (cdr env)))
-	))
-
 
 ;; insert!, below, is a destructive update of a list L, inserting the
 ;; parameter val onto the front of L (so that L is actually modified).
@@ -122,29 +108,15 @@
     ))
     
 (define (handle-cond expressions env)
-  ;; (display "First need to evaluate (car (car expressions))")(newline)
-  ;; (display "If True, execute (cdr (car ex)). This can be done w/ applybody")(newline)
-  ;; (display "If not true, recurse with (cdr expression) and env)")(newline)
-  ;; (let 
-  ;;   t (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env)) 
-  ;;   ;; ((if t (apply-body-with-env (cdr (car ex)) env) (handle-cond (cdr expressions) env))))
-  ;;   (display "t"))
-
- ;; PREVIOUS
- ;; (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
- ;;   (if first_true (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
- ;;   )
   
+    ;; We first need to check if the first expression starts with an Else, and then if (car (car expressions)) is true
+    ;; It it is true, we need to handle the block after that expression
+    ;; Else, just go to the next expression with recursive call
   (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
     (if first_true (handle-block (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
     )
-
-    ;; (let* ((firstElse (if (eq? (car (car expressions)) 'else) #t #f))
-    ;;    (firstExpT (if (my-eval (car (car expressions)) env) #t #f))
-    ;;    (firstTrue (or firstElse firstExpT)))
-    ;;(if firstTrue (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
-    
   )
+
 ; Here's how handle-letrec should implement LETREC
 ; 0) The parameters are the defs,(e.g. ((f exp1) (g exp2)), and the body,
 ;    which is a list of expressions, e.g. ((display x) (f (g 1)))
@@ -162,27 +134,13 @@
     (cond ((pair? body) 
             ;; Create Uninitialized takes care of Step 1 listed above
             ;; Update Uninitialzed List takes care of Steps 2, 3 and 4 from above
-            ;; Apply-body-with-env takes care of Step 5 from above
-           
-            ;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-            ;   (apply-body-with-env body envNew))
+            ;; Handle-block takes care of Step 5 from above
            
             (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
                 (handle-block body envNew))
 
-
-           ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-           ;;     (my-eval (car body) envNew))
-           ;; (handle-letrec defs (cdr body) env) 
        )))
 
-;; Evaluates all body statements with current Env
-(define (apply-body-with-env body env)
-  (cond ((pair? body)
-         (my-eval (car body) env)
-         (apply-body-with-env (cdr body) env))
-        ))
-          
 ;; Creates list of all vars as pair with *undefined 
 ;; If we have var x and y, list will be pairs that looks like ((x *undefined) (y *undefined))
 (define (create-uninitialized-list defs undefinedList)
@@ -198,12 +156,10 @@
          env)
         ((pair? defs)
              (cond ((pair? (cadr (car defs)))
-                     ;; (display "Setting Cdr to: ")(display (list (my-eval (cadr (car defs)) env)))(newline)
                      (set-cdr! (assoc (car (car defs)) env) (list (my-eval (cadr (car defs)) env))))
                     (else  
                       (set-cdr! (assoc (car (car defs)) env) (my-eval (cadr (car defs)) env)))
              )
-            ;; (set-cdr! (assoc (car (car defs)) env) (list (my-eval (cadr (car defs)) env)))
             (update-uninitialized-list (cdr defs) env))
     ))
 
@@ -214,17 +170,11 @@
 
 
 (define (handle-let defs body env)
-    ;; First time we run, we pass info to handle-let-defs, which returns to us
-    ;; Null defs, to always let us evaluate the rest of body with new env
-    (cond ((pair? defs) (handle-let '() body (handle-let-defs-to-env defs env env)))
-	    ((null? defs) 
-         (cond ((pair? body) 
-   		  		   (my-eval (car body) env)
-                   (handle-let defs (cdr body) env))
-                   )
-			    )))	 	 
-
-
+  ;; This is going to create a new environment, and then we handle block with new env
+    (let ((newEnv (handle-let-defs-to-env defs env env)))
+      (handle-block body newEnv))
+)   
+    
 ;; Takes all the def's and returns 
 ;; This will keep original env, make a new env, but will
 ;; continute to evaluate each expression with original env
@@ -242,11 +192,8 @@
   (cond ((pair? defs) 
          (handle-let* (cdr defs) body (cons (list (car (car defs)) (my-eval (cadr (car defs)) env)) env)))
          ((null? defs)
-          (cond ((pair? body)
-                 (my-eval (car body) env)
-                 (handle-let* defs (cdr body) env))
-                )
-          )))
+          (handle-block body env))
+          ))
 
 ;; Handling calls like a boss
 (define (handle-call evald-exps)
@@ -269,6 +216,16 @@
   (define (newline2)
     (display "\n"))
 
+;; Handling Applys
+(define (my-apply function arguments)
+  ;; Func will come in as ('primitive-function built-in-function) 
+  ;; Or they will come in as ('closure lambda-exp env)
+  (cond ((eq? (car function) 'primitive-function)
+         (apply (cadr function) arguments))
+        ((eq? (car function) 'closure)
+         (let ((function-actions-list (cons ((list function) arguments))))
+         (handle-call function-actions-list))) 
+    )) 
 
 ;;-------------------- Here is the initial global environment --------
 
@@ -299,5 +256,5 @@
     (list 'eof-object? (list 'primitive-function eof-object?))
     (list 'load (list 'primitive-function my-load))  ;;defined above
     (list 'newline (list 'primitive-function newline2))
-    (list 'displayEnv (list 'primitive-function displayEnv))
+    (list 'apply (list 'primitive-function my-apply))
     ))
