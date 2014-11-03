@@ -130,10 +130,15 @@
   ;;   ;; ((if t (apply-body-with-env (cdr (car ex)) env) (handle-cond (cdr expressions) env))))
   ;;   (display "t"))
 
-  (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
-    (if first_true (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
-    )
+ ;; PREVIOUS
+ ;; (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
+ ;;   (if first_true (apply-body-with-env (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
+ ;;   )
   
+  (let ((first_true (if (eq? (car (car expressions)) 'else) #t (my-eval (car (car expressions)) env))))
+    (if first_true (handle-block (cdr (car expressions)) env) (handle-cond (cdr expressions) env))
+    )
+
     ;; (let* ((firstElse (if (eq? (car (car expressions)) 'else) #t #f))
     ;;    (firstExpT (if (my-eval (car (car expressions)) env) #t #f))
     ;;    (firstTrue (or firstElse firstExpT)))
@@ -159,9 +164,13 @@
             ;; Update Uninitialzed List takes care of Steps 2, 3 and 4 from above
             ;; Apply-body-with-env takes care of Step 5 from above
            
-            (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
-                (apply-body-with-env body envNew))
+            ;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
+            ;   (apply-body-with-env body envNew))
            
+            (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
+                (handle-block body envNew))
+
+
            ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
            ;;     (my-eval (car body) envNew))
            ;; (handle-letrec defs (cdr body) env) 
