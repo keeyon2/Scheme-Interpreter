@@ -42,4 +42,11 @@
         ))
      (else 5)))
 
-
+(define (test-cond2)
+   (display "Should return 100") (newline)
+   (cond ((= one two)(display 3))
+     ((= one (* one 1))
+          (cond ((null? '(1 2 3))(display 4))
+        (else (display (- two one)))
+        ))
+     (else 5)))

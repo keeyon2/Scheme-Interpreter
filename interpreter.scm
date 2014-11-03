@@ -161,6 +161,10 @@
            
             (let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
                 (apply-body-with-env body envNew))
+           
+           ;;(let ((envNew (update-uninitialized-list defs (create-uninitialized-list defs env))))
+           ;;     (my-eval (car body) envNew))
+           ;; (handle-letrec defs (cdr body) env) 
        )))
 
 ;; Evaluates all body statements with current Env
