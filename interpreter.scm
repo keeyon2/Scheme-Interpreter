@@ -223,8 +223,8 @@
   (cond ((eq? (car function) 'primitive-function)
          (apply (cadr function) arguments))
         ((eq? (car function) 'closure)
-         (let ((function-actions-list (cons ((list function) arguments))))
-         (handle-call function-actions-list))) 
+         (let ((function-actions-list (cons function arguments)))
+            (handle-call function-actions-list)))
     )) 
 
 ;;-------------------- Here is the initial global environment --------
