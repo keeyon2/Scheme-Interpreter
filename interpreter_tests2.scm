@@ -12,7 +12,6 @@
     (display "Should return 2") (newline)
     two))
 
-
 (define (test-lambda)
   (display ((lambda (x) (+ x x)) 4)))
 
@@ -44,3 +43,9 @@
 (define (test-apply)
   (display "Should return 20") (newline)
   (apply add5 (list 15)))
+
+(define (test-if)
+  (display "Should Return 50 then 10") (newline)
+  (if (> 5 1) (display "50") (display "40"))
+  (newline)
+  (if (< 5 1) (display "20") (display "10")))

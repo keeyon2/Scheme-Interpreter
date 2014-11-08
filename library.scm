@@ -38,9 +38,6 @@
 (define (testFunc x)
   (+ x 2))
 
-;; TestList
-(define testList '(1 2 3 4 5 6 7 8 9))
-
 ;; And
 (define (and x y)
   (if x y #f))
@@ -53,8 +50,29 @@
 (define (not x)
   (if x #f #t))
 
-;; Equal?
-(define (equal? L1 L2)
+(define (equal? Item1 Item2)
+  (cond
+    ;; Item 1 is Pair
+    ((pair? Item1)
+     (cond 
+       ;; Item 1 and 2 are Pair, check for recurs
+       ((pair? Item2)
+        (if (equal? (car Item1) (car Item2)) (equal? (cdr Item1) (cdr Item2)) #f))
+       ;; Item 1 is Pair, Item 2 is not
+       (else
+         #f)))
+    ;; Item 1 is not a pair
+    (else 
+      (cond
+        ((pair? Item2)
+         #f)
+        (else
+          (eq? Item1 Item2)
+          )))
+    ))
+
+;; Equal Orig?
+(define (equal?Orig L1 L2)
   (cond 
 	;; Base Cases 
 	((null? L1)
