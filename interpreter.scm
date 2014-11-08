@@ -67,6 +67,7 @@
         (cadr item))
       )))
 
+;; Uses Scheme Interpreters if to make this happen
 (define (handle-if test then-exp else-exp env)
   (if (my-eval test env)
       (my-eval then-exp env)

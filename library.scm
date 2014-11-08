@@ -34,10 +34,6 @@
 	(else (cons (func (car L)) (map func (cdr L))))
 	))
 
-;; Test Func - Remove me
-(define (testFunc x)
-  (+ x 2))
-
 ;; And
 (define (and x y)
   (if x y #f))
@@ -70,33 +66,6 @@
           (eq? Item1 Item2)
           )))
     ))
-
-;; Equal Orig?
-(define (equal?Orig L1 L2)
-  (cond 
-	;; Base Cases 
-	((null? L1)
-	  (if (null? L2) #t #f))
-
-	;; Same base case as above but opposite list
-	;; Redundant code but easier to understand
-	((null? L2)
-	  (if (null? L1) #t #f))
-
-	;; L1 not list
-	((not (pair? L1))
-	 (cond ((not (pair? L2)) (= L1 L2))
-	       ((pair? L2) #f)
-	       ))
-
-	;; L1 is a list
-	((pair? L1)
-	 (cond ((not (pair? L2)) #f)
-		((pair? L2)
-		  	(cond 
-                 		((eq? (car L1) (car L2)) (equal? (cdr L1) (cdr L2)))
-		 		(else #f))
-			)))))
 
 ;; Assoc
 (define (assoc obj L1)

@@ -1,5 +1,0 @@
-(define (test-if)
-  (display "Should Return 50 then 10") (newline)
-  (if (> 5 1) (display "50") (display "40"))
-  (newline)
-  (if (< 5 1) (display "20") (display "10")))
