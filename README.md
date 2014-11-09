@@ -7,25 +7,25 @@ I redefined all built in function scheme uses with definitions built with the mo
 basic Scheme functions. Mostly car, cdr, cons
 
 Redefined Functions:
-load
-define
-assoc
-insert!
-let
-let*
-letrec
-apply
-append
-map
-and
-or
-not
-equal?
-cadr
-cddr
-cdddr
-caddr
-cadddr
+load,
+define,
+assoc,
+insert!,
+let,
+let*,
+letrec,
+apply,
+append,
+map,
+and,
+or,
+not,
+equal?,
+cadr,
+cddr,
+cdddr,
+caddr,
+cadddr,
 
 Also have functionality to interpreter and handle these calls, and also lambda 
 
@@ -43,21 +43,36 @@ This is how to test the library
 > (load "interpreter.scm")     ;loading interpreter into Scheme system                     
 > (repl)
 --> (load "library.scm")
+
 ...
+
 --> (load "test_library.scm")
+
 ...
+
 --> (test-library)  
+
 
 This is how to get the interpreter to interpret itself
 > (load "interpreter.scm")     ;loading interpreter into Scheme system                     
+
 > (repl)                         ;invoking interpreter, note the change in prompt
+
 --> (load "library.scm")         ;load the library file
+
 --> (load "interpreter.scm")      ;loading intrepreter into interpreter
+
 --> (repl)                          ; invoking 2nd interpreter
+
 --> (define (fac x) (if (= x 0) 1 (* x (fac (- x 1)))))  ;defining factorial
+
 --> (fac 4)                                              ;calling factorial
+
 --> 24
+
 --> (exit)                          ; exiting 2nd interpreter
+
 --> (exit)                          ; exiting 1st interpreter
+
 >                                ; back in scheme system
 
