@@ -58,7 +58,7 @@ This tests the library
 > --> (test-library)  
 
 
-This gets the interpreter to interpret itself
+This gets the interpreter to interpret itself, or as it's better known, SchemeCeption
 > (load "interpreter.scm")
 
 > (repl)
