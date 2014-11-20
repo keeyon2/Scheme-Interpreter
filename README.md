@@ -44,9 +44,13 @@ Running Scheme Interpreter
 
 This tests the library 
 > (load "interpreter.scm")
+
 > (repl)
+
 > --> (load "library.scm")
+
 ...
+
 > --> (load "test_library.scm")
 
 ...
