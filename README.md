@@ -7,27 +7,26 @@ I redefined all built in function scheme uses with definitions built with the mo
 basic Scheme functions. Mostly car, cdr, cons
 
 Redefined Functions:
-load,
-define,
-assoc,
-insert!,
-let,
-let*,
-letrec,
-apply,
-append,
-map,
-and,
-or,
-not,
-equal?,
-cadr,
-cddr,
-cdddr,
-caddr,
-cadddr,
+- load,
+- define,
+- assoc,
+- insert!,
+- let,
+- let*,
+- letrec,
+- apply,
+- append,
+- map,
+- and,
+- or,
+- not,
+- equal?,
+- cadr,
+- cddr,
+- cdddr,
+- caddr,
+- cadddr,
 
-Also have functionality to interpreter and handle these calls, and also lambda 
 
 To run the scheme interpreter
 Installing and Running Scheme
