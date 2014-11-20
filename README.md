@@ -6,7 +6,10 @@ Scheme Repl and Interpreter that Interprets itself, or as I call it, SchemeCepti
 I redefined all built in function scheme uses with definitions built with the most 
 basic Scheme functions. Mostly car, cdr, cons
 
+For the interpreter to interpret itself, the interpretter must have a diffinition for all operations it uses, which are listed below.
+
 Redefined Functions:
+-----------------------
 - load
 - define
 - lambda interpretation
@@ -27,7 +30,7 @@ Redefined Functions:
 - cdddr
 - caddr
 - caddd
-
+- newline
 
 Installing Scheme
 ------------------------------
