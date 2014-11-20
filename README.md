@@ -29,7 +29,7 @@ Redefined Functions:
 - caddd
 
 
-Installing and Running Scheme
+Installing Scheme
 ------------------------------
 
 - This scheme interpreter uses the Racket implementation of Scheme. This can be found at: http://racket-lang.org/
@@ -39,8 +39,11 @@ Installing and Running Scheme
 - To use a command-line version in shell, run the executable plt-r5rs, which is found in the bin/ directory within the Racket folder that you will have downloaded. 
 I created an alias to it named scheme, so I just type scheme to run the system.
 
+Running Scheme Interpreter
+------------------------------
+
 This tests the library 
-> (load "interpreter.scm")     ;loading interpreter into Scheme system                     
+> (load "interpreter.scm")
 > (repl)
 > --> (load "library.scm")
 ...
@@ -52,25 +55,25 @@ This tests the library
 
 
 This gets the interpreter to interpret itself
-> (load "interpreter.scm")     ;loading interpreter into Scheme system                     
+> (load "interpreter.scm")
 
-> (repl)                         ;invoking interpreter, note the change in prompt
+> (repl)
 
-> --> (load "library.scm")         ;load the library file
+> --> (load "library.scm")
 
-> --> (load "interpreter.scm")      ;loading intrepreter into interpreter
+> --> (load "interpreter.scm")
 
-> --> (repl)                          ; invoking 2nd interpreter
+> --> (repl)
 
-> --> (define (fac x) (if (= x 0) 1 (* x (fac (- x 1)))))  ;defining factorial
+> --> (define (fac x) (if (= x 0) 1 (* x (fac (- x 1)))))
 
-> --> (fac 4)                                              ;calling factorial
+> --> (fac 4)
 
 > --> 24
 
-> --> (exit)                          ; exiting 2nd interpreter
+> --> (exit)
 
-> --> (exit)                          ; exiting 1st interpreter
+> --> (exit)
 
 >                                ; back in scheme system
 
