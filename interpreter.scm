@@ -1,8 +1,5 @@
                             ;;;Mini-Scheme Interpreter
 
-
-;;; Your first task is to understand this. 
-
 (define (repl)     ;;; the read-eval-print loop.
   (display "--> ") 
   (let ((exp (read)))
