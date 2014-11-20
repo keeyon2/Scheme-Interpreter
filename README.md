@@ -7,26 +7,26 @@ I redefined all built in function scheme uses with definitions built with the mo
 basic Scheme functions. Mostly car, cdr, cons
 
 Redefined Functions:
-- load,
-- define,
-- assoc,
-- insert!,
-- let,
-- let*,
-- letrec,
-- apply,
-- append,
-- map,
-- and,
-- or,
-- not,
-- equal?,
-- cadr,
-- cddr,
-- cdddr,
-- caddr,
-- cadddr,
-
+- load
+- define
+- lambda interpretation
+- assoc
+- insert!
+- let
+- let*
+- letrec
+- apply
+- append
+- map
+- and
+- or
+- not
+- equal?
+- cadr
+- cddr
+- cdddr
+- caddr
+- caddd
 
 To run the scheme interpreter
 Installing and Running Scheme
@@ -39,7 +39,7 @@ To use a command-line version in shell, run the executable plt-r5rs, which is fo
 I created an alias to it named scheme, so I just type scheme to run the system.
 
 This is how to test the library 
-> (load "interpreter.scm")     ;loading interpreter into Scheme system                     
+> >(load "interpreter.scm")     ;loading interpreter into Scheme system                     
 > (repl)
 --> (load "library.scm")
 
